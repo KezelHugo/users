@@ -12,6 +12,9 @@ import com.ventas.idat.users.dto.LoginRequest;
 import com.ventas.idat.users.dto.UserDTO;
 import com.ventas.idat.users.model.User;
 import com.ventas.idat.users.service.UserService;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/users")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     @Autowired
@@ -36,8 +40,9 @@ public class UserController {
     }
     
     @GetMapping("/profile")
-    public String getUser(Authentication auth) {
-        return "Bienvenido User = " + auth.getName();
+    public ResponseEntity<ApiResponse<UserDTO>> getUserDetailInSession(Authentication auth) {
+        ApiResponse<UserDTO> response = userService.getUserDetail(auth.getName());
+        return ResponseEntity.status(response.getResponseCode()).body(response);
     }
 
     @GetMapping("/profile/{username}")

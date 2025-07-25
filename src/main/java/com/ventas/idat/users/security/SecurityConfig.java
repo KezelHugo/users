@@ -1,5 +1,6 @@
 package com.ventas.idat.users.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,10 +15,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.ventas.idat.users.config.JwtAuthFilter;
+import com.ventas.idat.users.exception.CustomAccessDeniedHandler;
+import com.ventas.idat.users.exception.CustomAuthenticationEntryPoint;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+
+    @Autowired
+    private CustomAccessDeniedHandler accessDeniedHandler;
 
     private final JwtAuthFilter jwtAuthFilter;
 
@@ -30,10 +39,16 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                     .requestMatchers("/api/users/login", "/api/users/register").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/users/").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/users/profile").authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/users/profile/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                    .authenticationEntryPoint(authenticationEntryPoint)
+                    .accessDeniedHandler(accessDeniedHandler)
                 )
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
