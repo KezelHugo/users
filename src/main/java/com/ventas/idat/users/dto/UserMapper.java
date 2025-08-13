@@ -1,7 +1,5 @@
 package com.ventas.idat.users.dto;
 
-import org.springframework.stereotype.Component;
-
 import com.ventas.idat.users.model.User;
 
 public class UserMapper {
