@@ -133,5 +133,32 @@ http://localhost:8080/swagger-ui.html
 
 ---
 
+## 🔍 Análisis de Calidad con SonarQube
+
+Se ejecutaron análisis de calidad de código usando **SonarQube**, identificando y corrigiendo vulnerabilidades, errores y *code smells* para mejorar la mantenibilidad y seguridad del sistema.
+
+### Principales mejoras aplicadas:
+- **Optimización de Streams en Java**  
+  - Se reemplazó el uso de `collect(Collectors.toList())` por `toList()` en streams, mejorando la legibilidad y eliminando código innecesario.
+- **Seguridad en configuración de Spring Security**  
+  - Se revisó y documentó la desactivación de CSRF para asegurar que solo se aplique en contextos seguros.
+- **Pruebas unitarias limpias**  
+  - Se añadieron comentarios en métodos de prueba vacíos para justificar su uso o se lanzaron excepciones `UnsupportedOperationException` cuando era necesario.
+- **Eliminación de modificadores innecesarios**  
+  - Se retiraron modificadores como `public` en clases de prueba que no los requerían.
+- **Refactorización de clases utilitarias**  
+  - Se ajustó `UserMapper` para que no sea instanciado como *bean* innecesario y se mantenga como clase de utilidades estática.
+- **Mejora en la inyección de dependencias para pruebas**  
+  - Se corrigieron anotaciones de `@TestConfiguration` y se resolvieron importaciones para asegurar que las pruebas funcionen correctamente.
+ 
+![Sonar-results](assets/sonar_results.png)
+
+### Resultado del análisis:
+- **0 Vulnerabilidades críticas**  
+- **0 Bugs detectados por SonarQube**    
+- **Cobertura de pruebas** incrementada al ejecutar tests unitarios y de integración.
+
+---
+
 ## 👨‍💻 Autor
 Kevin Benjamin Sosa León
