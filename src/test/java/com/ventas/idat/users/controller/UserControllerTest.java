@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
 
@@ -27,7 +29,7 @@ import com.ventas.idat.users.service.UserServiceImpl;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
+class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -100,6 +102,46 @@ public class UserControllerTest {
         mockMvc.perform(get("/api/users/"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].username").value("test"));
+    }
+
+    @Test
+    @WithMockUser(username = "test@idat.pe", roles = {"ADMIN"})
+    void testGetProfileSuccess() throws Exception {
+        UserDTO userDTO = UserDTO.builder()
+                .firstName("Test")
+                .lastName("User")
+                .username("test@idat.pe")
+                .role("admin")
+                .build();
+
+        ApiResponse<UserDTO> response = new ApiResponse<>();
+        response.setResponseCode(HttpStatus.OK.value());
+        response.setResponseMessage("Usuario encontrado");
+        response.setData(userDTO);
+
+        when(userService.getUserDetail("test@idat.pe")).thenReturn(response);
+
+        mockMvc.perform(get("/api/users/profile"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.responseMessage").value("Usuario encontrado"))
+                .andExpect(jsonPath("$.data.username").value("test@idat.pe"))
+                .andExpect(jsonPath("$.data.role").value("admin"));
+    }
+
+    @Test
+    @WithMockUser(username = "ghost@idat.pe", roles = {"ADMIN"})
+    void testGetProfileNotFound() throws Exception {
+        ApiResponse<UserDTO> response = new ApiResponse<>();
+        response.setResponseCode(HttpStatus.NOT_FOUND.value());
+        response.setResponseMessage("Usuario no encontrado");
+        response.setData(null);
+
+        when(userService.getUserDetail("ghost@idat.pe")).thenReturn(response);
+
+        mockMvc.perform(get("/api/users/profile"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.responseMessage").value("Usuario no encontrado"))
+                .andExpect(jsonPath("$.data", nullValue()));
     }
 
 }

@@ -4,8 +4,12 @@ import org.springframework.stereotype.Component;
 
 import com.ventas.idat.users.model.User;
 
-@Component
 public class UserMapper {
+
+    private UserMapper() {
+        throw new UnsupportedOperationException("Esta clase no puede ser instanciada");
+    }
+
 
     public static UserDTO toDTO(User user) {
         return UserDTO.builder()

@@ -2,9 +2,7 @@ package com.ventas.idat.users.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,17 +23,20 @@ import com.ventas.idat.users.repository.UserRepository;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JWTUtil jwtUtil;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JWTUtil jwtUtil;
+    public UserServiceImpl(UserRepository userRepository,
+                        PasswordEncoder passwordEncoder,
+                        AuthenticationManager authenticationManager,
+                        JWTUtil jwtUtil) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
     public Optional<User> findByUsername(String username) {
@@ -53,11 +54,12 @@ public class UserServiceImpl implements UserService {
         List<UserDTO> usersDTO = userRepository.findAll()
                                     .stream()
                                     .map(UserMapper::toDTO)
-                                    .collect(Collectors.toList());    
+                                    .toList();   
         return ApiResponse.<List<UserDTO>>builder()
             .responseCode(HttpStatus.OK.value())
             .responseMessage("Usuarios obtenidos correctamente")
-            .data(usersDTO).build();
+            .data(usersDTO)
+            .build();
     }
 
     @Override

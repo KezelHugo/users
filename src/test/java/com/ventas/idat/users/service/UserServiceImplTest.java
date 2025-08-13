@@ -16,14 +16,16 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Optional;
 
 import com.ventas.idat.users.config.JWTUtil;
 import com.ventas.idat.users.dto.ApiResponse;
 import com.ventas.idat.users.dto.LoginRequest;
+import com.ventas.idat.users.dto.UserDTO;
 import com.ventas.idat.users.model.User;
 import com.ventas.idat.users.repository.UserRepository;
 
-public class UserServiceImplTest {
+class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -102,6 +104,41 @@ public class UserServiceImplTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getResponseCode());
         assertEquals("Credenciales Invalidas", response.getResponseMessage());
         assertNull(response.getData());
+    }
+
+    @Test
+    void testGetUserDetailFound() {
+        User user = new User();
+        user.setFirstName("Test");
+        user.setLastName("User");
+        user.setUsername("test@idat.pe");
+        user.setRole("admin");
+        user.setPassword("encoded");
+
+        when(userRepository.findByUsername("test@idat.pe")).thenReturn(Optional.of(user));
+
+        ApiResponse<UserDTO> response = userServiceImpl.getUserDetail("test@idat.pe");
+
+        assertEquals(HttpStatus.OK.value(), response.getResponseCode());
+        assertEquals("Usuario encontrado", response.getResponseMessage());
+        assertNotNull(response.getData());
+        assertEquals("test@idat.pe", response.getData().getUsername());
+        assertEquals("admin", response.getData().getRole());
+
+        verify(userRepository, times(1)).findByUsername("test@idat.pe");
+    }
+
+    @Test
+    void testGetUserDetailNotFound() {
+        when(userRepository.findByUsername("missing@idat.pe")).thenReturn(Optional.empty());
+
+        ApiResponse<UserDTO> response = userServiceImpl.getUserDetail("missing@idat.pe");
+
+        assertEquals(HttpStatus.NOT_FOUND.value(), response.getResponseCode());
+        assertEquals("Usuario no encontrado", response.getResponseMessage());
+        assertNull(response.getData());
+
+        verify(userRepository, times(1)).findByUsername("missing@idat.pe");
     }
 
 }

@@ -1,6 +1,5 @@
 package com.ventas.idat.users.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,23 +19,25 @@ import com.ventas.idat.users.exception.CustomAuthenticationEntryPoint;
 
 @Configuration
 @EnableMethodSecurity
+
 public class SecurityConfig {
 
-    @Autowired
-    private CustomAuthenticationEntryPoint authenticationEntryPoint;
-
-    @Autowired
-    private CustomAccessDeniedHandler accessDeniedHandler;
-
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
     private final JwtAuthFilter jwtAuthFilter;
 
-    SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(CustomAuthenticationEntryPoint authenticationEntryPoint,
+                        CustomAccessDeniedHandler accessDeniedHandler,
+                        JwtAuthFilter jwtAuthFilter) {
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                // CSRF se deshabilita porque esta API REST usa JWT y no maneja cookies de sesión.
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()

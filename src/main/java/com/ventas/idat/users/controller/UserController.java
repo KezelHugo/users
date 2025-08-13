@@ -1,7 +1,6 @@
 package com.ventas.idat.users.controller;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +24,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    // Constructor injection
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<User> register(@RequestBody User user) {
